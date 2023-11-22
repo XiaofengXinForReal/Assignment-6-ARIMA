@@ -1,0 +1,30 @@
+---
+title: "Assignment#6"
+output: html_document
+date: "2023-11-22"
+---
+
+```{r}
+library(fpp)
+library(fpp2)
+library(readxl)
+ImportationDataofChina <- read_excel("C:/Users/xinxf/OneDrive/Desktop/Rutgers-NB 2023 Fall/Business Forecasting/ImportationDataofChina.xlsx")
+View(ImportationDataofChina)
+IPV_ts<-ts(ImportationDataofChina$`Periodic Imporation Value`, frequency = 12,start = c(2018,9),end = c(2023,8))
+plot(IPV_ts)#Seems not stationary
+#NSDIFFS only works for seasonal data
+nsdiffs(IPV_ts)
+# However NDIFFS works with non-seasonal data
+ndiffs(IPV_ts)
+#Find the most suitable ARIMA model for my data
+auto_fit<-auto.arima(IPV_ts,stepwise=FALSE, approximation=FALSE,trace = TRUE)
+auto_fit
+#The best model for my data is ARIMA(0,1,2)(1,0,0), which means that need to differentiate 2 times and need to consider no lag value for regression and has two past residuals for moving average. There is a auto-regressive factor in this model.
+forecast(auto_fit,h=5,level=c(99.5))#perform the forecast of the next five period with 99.5% confidence.
+plot(forecast(auto_fit,h=5,level = c(99.5)))# plot of my forecast
+plot(auto_fit$residuals)
+Acf(auto_fit$residuals)#all the lags of residuals are close to 0.
+hist(auto_fit$residuals)#the histogram of residuals skews to the left.
+accuracy(auto_fit)#MASE=51.96%, is a somewhat good model.
+```
+
